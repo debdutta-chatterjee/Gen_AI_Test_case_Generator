@@ -27,6 +27,16 @@ class TestScenarios(BaseModel):
         description="list of test scenarios",
     )
 
+class Feedback(BaseModel):
+    feedback_text: str  = Field(
+        default='',
+        description="feedback in written words",
+    )
+    feedback_decision:  Literal["Accepted", "Rejected"]  = Field(
+        default='Accepted',
+        description="feedback in boolean accpeted or rejected",
+    )
+
 class AgentState(TypedDict):
     # The add_messages function defines how an update should be processed
     # Default is to replace. add_messages says "append"
@@ -34,7 +44,7 @@ class AgentState(TypedDict):
    
     user_story : UserStory
     test_scenarios: TestScenarios
-    scenario_review: Literal["Accepted", "Rejected"] = "Rejected"
+    scenario_review: Feedback
     test_step_review: Literal["Accepted", "Rejected"] = "Rejected"
     user_input:str
 
@@ -89,9 +99,32 @@ def generate_test_scenario(state:AgentState):
     print("==============================================================")
     return {"test_scenarios":response}
 
+
 def review_test_scenario(state:AgentState):
     print('review_test_scenario')
-    return {"scenario_review":"Accepted"}
+    prompt ="""Review the test scenarios and provide feedback to 
+                Accept or Reject for the given user story details.
+                User story - {user_story}
+                Business context - {business_context}
+                Acceptance criteria - {acceptance_criteria}
+            """
+    prompt_formatted = prompt.format(
+        user_story=state["user_story"].user_story, 
+        business_context=state["user_story"].business_context, 
+        acceptance_criteria=state["user_story"].acceptance_critera)
+    llm =model.with_structured_output(Feedback)
+    response = llm.invoke(
+        [
+        SystemMessage(
+                content="You are an expert software qualty analyst in "
+                "writing functional test cases."
+            ),
+            HumanMessage(content=prompt_formatted),
+        ]
+        )
+    print(response)
+    print("==============================================================")
+    return {"scenario_review":response}
 
 def generate_test_steps(state:AgentState):
     print('generate_test_steps')
@@ -105,8 +138,8 @@ def finalize_content(state:AgentState):
 
 def route_review_test_scenario(state: AgentState):
     """Route back to generate test scenario or genrate go to the test case step based on the review feedback"""
-    print(state["scenario_review"])
-    return state["scenario_review"]
+    print(state["scenario_review"].feedback_decision)
+    return state["scenario_review"].feedback_decision
 
 def route_review_test_step(state: AgentState):
     """Route back to generate test steps or go to the finalize
@@ -160,7 +193,6 @@ builder.add_edge("finalize_content",END)
 graph = builder.compile()
 
 initial_state = {
-    "scenario_review": "Rejected",
     "test_step_review": "Rejected",
     "user_input": "s"
 }
