@@ -4,6 +4,8 @@ import dotenv
 import pandas as pd
 import numpy as np
 
+from src.azure.azure import AzureConnection
+
 class StreamlitUi:
 
     def __init__(self):
@@ -16,14 +18,22 @@ class StreamlitUi:
             st.title(self.page_title)
             st.subheader(self.page_header)
 
-            mysql_host=st.sidebar.text_input("Provide ADO url")
-            mysql_host=st.sidebar.text_input("Provide ADO token",type="password")
-            mysql_host=st.sidebar.text_input("Provide API key",type="password")
-
+            ado_url=st.sidebar.text_input("Provide ADO url")
+            pat=st.sidebar.text_input("Provide ADO token",type="password")
+            ado_us_id=st.sidebar.text_input("Provide User story id")
+            api_key=st.sidebar.text_input("Provide API key",type="password")
+            
+            st.session_state.requirement_text =""
+            
             if st.sidebar.button("Get ADO requirement"):
-                pass
-            st.text_area("Requirement from ADO:", key="Requirement from ADO")
+                ado = AzureConnection()
+                details = ado.get_user_story_details(ado_url,pat,ado_us_id)
+                st.session_state.requirement_text = details
+            
+            
+            st.text_area("Requirement from ADO:", value =st.session_state.requirement_text,key="Requirement from ADO")
             st.text_area("Precondition:", key="Precondition")
+
 
             if st.button("Generate test cases", key="generate_test_case"):
                 st.info("Generate test cases is still work in progress!")
