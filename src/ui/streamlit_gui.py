@@ -25,6 +25,8 @@ class StreamlitUi:
             st.text_area("Requirement from ADO:", key="Requirement from ADO")
             st.text_area("Precondition:", key="Precondition")
 
+            if st.button("Generate test cases", key="generate_test_case"):
+                st.info("Generate test cases is still work in progress!")
 
             df = pd.DataFrame(
             np.random.rand(5, 5), 
@@ -37,30 +39,5 @@ class StreamlitUi:
             if st.button("Upload to Azure", key="upload_button"):
                 st.info("Upload functionality is still work in progress!")
 
-            # Style the button
-            st.markdown(
-                """
-                <style>
-                div.stButton > button[key="upload_button"] {
-                    background-color: #4CAF50;
-                    color: white;
-                    padding: 15px 32px;
-                    text-align: center;
-                    text-decoration: none;
-                    display: inline-block;
-                    font-size: 16px;
-                    margin: 4px 2px;
-                    cursor: pointer;
-                    border-radius: 12px;
-                    transition-duration: 0.4s;
-                }
-                div.stButton > button:hover {
-                    background-color: white;
-                    color: black;
-                    border: 2px solid #4CAF50;
-                }
-                </style>                
-                """, unsafe_allow_html=True
-            )
         except Exception as e:
             st.write(f"Exception occurred {e}")
