@@ -17,12 +17,23 @@ class UserStory(BaseModel):
         description="acceptance criteria",
     )
 
+from typing import List
+class TestScenario(BaseModel):
+    test_scenario: str  = Field(
+        description="test scenario",
+    )
+class TestScenarios(BaseModel):
+    test_scenaris: List[TestScenario]  = Field(
+        description="list of test scenarios",
+    )
+
 class AgentState(TypedDict):
     # The add_messages function defines how an update should be processed
     # Default is to replace. add_messages says "append"
     #messages: Annotated[Sequence[BaseMessage], add_messages]
    
     user_story : UserStory
+    test_scenarios: TestScenarios
     scenario_review: Literal["Accepted", "Rejected"] = "Rejected"
     test_step_review: Literal["Accepted", "Rejected"] = "Rejected"
     user_input:str
@@ -48,15 +59,7 @@ def get_requirement(state:AgentState):
     print("==============================================================")
     return {"user_story":response}
 
-from typing import List
-class TestScenario(BaseModel):
-    test_scenario: str  = Field(
-        description="test scenario",
-    )
-class TestScenarios(BaseModel):
-    test_scenaris: List[TestScenario]  = Field(
-        description="list of test scenarios",
-    )
+
 
 def generate_test_scenario(state:AgentState):
     print('generate_test_scenario')
@@ -82,8 +85,9 @@ def generate_test_scenario(state:AgentState):
         ]
         )
     
-    print(response)
+    #print(response)
     print("==============================================================")
+    return {"test_scenarios":response}
 
 def review_test_scenario(state:AgentState):
     print('review_test_scenario')
