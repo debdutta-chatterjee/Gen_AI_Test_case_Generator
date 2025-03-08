@@ -127,11 +127,11 @@ def review_test_scenario(state:AgentState):
     return {"scenario_review":response}
 
 
-class TestScenario(BaseModel):
+class TestCase(BaseModel):
     test_scenario: str  = Field(
         description="test scenario",
     )
-class TestScenarios(BaseModel):
+class TestCases(BaseModel):
     test_scenaris: List[TestScenario]  = Field(
         description="list of test scenarios",
     )
@@ -149,31 +149,34 @@ def generate_test_steps(state:AgentState):
         acceptance_criteria=state["user_story"].acceptance_critera,
         test_scenario = state["test_scenarios"]
         )
-    # llm =model.with_structured_output(Feedback)
-    # response = llm.invoke(
-    #     [
-    #     SystemMessage(
-    #             content="You are an expert software qualty analyst in "
-    #             "writing functional test cases."
-    #         ),
-    #         HumanMessage(content=prompt_formatted),
-    #     ]
-    #     )
-    # print(response)
+    llm =model.with_structured_output(TestCases)
+    response = llm.invoke(
+        [
+        SystemMessage(
+                content="You are an expert software qualty analyst in "
+                "writing functional test cases."
+            ),
+            HumanMessage(content=prompt_formatted),
+        ]
+        )
+    print(response)
     print("==============================================================")
 
 def review_steps(state:AgentState):
     print('review_steps')
     return {"test_step_review":"Accepted"}
+    print("==============================================================")
 
 def finalize_content(state:AgentState):
     print('finalize_content')
+    print("==============================================================")
 
 def route_review_test_scenario(state: AgentState):
     """Route back to generate test scenario or genrate go to the 
     test case step based on the review feedback"""
     print(state["scenario_review"].feedback_decision)
     return state["scenario_review"].feedback_decision
+    print("==============================================================")
 
 def route_review_test_step(state: AgentState):
     """Route back to generate test steps or go to the finalize
@@ -181,6 +184,7 @@ def route_review_test_step(state: AgentState):
 
     print(state["test_step_review"])
     return state["test_step_review"]
+    print("==============================================================")
 
 from langgraph.graph import START,END,StateGraph
 
