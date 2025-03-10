@@ -5,6 +5,7 @@ from langgraph.graph.message import add_messages
 from langchain_groq import ChatGroq 
 from pydantic import BaseModel, Field
 from langchain_core.messages import HumanMessage, SystemMessage
+import pandas as pd
 
 class UserStory(BaseModel):
     user_story: str  = Field(
@@ -23,7 +24,7 @@ class TestScenario(BaseModel):
         description="test scenario",
     )
 class TestScenarios(BaseModel):
-    test_scenaris: List[TestScenario]  = Field(
+    test_scenarios: List[TestScenario]  = Field(
         description="list of test scenarios",
     )
 
@@ -37,6 +38,34 @@ class Feedback(BaseModel):
         description="feedback in boolean accpeted or rejected",
     )
 
+class TestStep(BaseModel):
+    test_step: str  = Field(
+        description="test steps",
+    )
+    step_action: str  = Field(
+        description="action",
+    )
+    step_expected: str  = Field(
+        description="expected step",
+    )
+class TestCase(BaseModel):
+    test_case_id: str  = Field(
+        description="test case id",
+    )
+    work_item_type: str  = Field(
+        description="work item type",
+    )
+    state: str  = Field(
+        description="state",
+    )
+    test_steps: List[TestStep]  = Field(
+        description="list of test cases",
+    )
+class TestCases(BaseModel):
+    test_cases: List[TestCase]  = Field(
+        description="list of test cases",
+    )
+
 class AgentState(TypedDict):
     # The add_messages function defines how an update should be processed
     # Default is to replace. add_messages says "append"
@@ -46,6 +75,7 @@ class AgentState(TypedDict):
     test_scenarios: TestScenarios
     scenario_review: Feedback
     test_step_review: Literal["Accepted", "Rejected"] = "Rejected"
+    test_case: TestCases
     user_input:str
 
 api_key = "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"
@@ -127,14 +157,6 @@ def review_test_scenario(state:AgentState):
     return {"scenario_review":response}
 
 
-class TestCase(BaseModel):
-    test_scenario: str  = Field(
-        description="test scenario",
-    )
-class TestCases(BaseModel):
-    test_scenaris: List[TestScenario]  = Field(
-        description="list of test scenarios",
-    )
 def generate_test_steps(state:AgentState):
     print('generate_test_steps')
     prompt ="""Generate test steps for each given scenario. User story details is provided.
@@ -147,8 +169,10 @@ def generate_test_steps(state:AgentState):
         user_story=state["user_story"].user_story, 
         business_context=state["user_story"].business_context, 
         acceptance_criteria=state["user_story"].acceptance_critera,
-        test_scenario = state["test_scenarios"]
+        test_scenario = state["test_scenarios"].test_scenarios[0]
         )
+    
+    #print(prompt_formatted)
     llm =model.with_structured_output(TestCases)
     response = llm.invoke(
         [
@@ -159,16 +183,32 @@ def generate_test_steps(state:AgentState):
             HumanMessage(content=prompt_formatted),
         ]
         )
-    print(response)
+    #print(response)
     print("==============================================================")
+    return {"test_case":response}
+    
 
 def review_steps(state:AgentState):
     print('review_steps')
-    return {"test_step_review":"Accepted"}
     print("==============================================================")
+    return {"test_step_review":"Accepted"}    
 
 def finalize_content(state:AgentState):
     print('finalize_content')
+    data = []
+    for test_case in state["test_case"].test_cases:
+        for step in test_case.test_steps:
+            data.append({
+                "test_case_id": test_case.test_case_id,
+                "work_item_type": test_case.work_item_type,
+                "state": test_case.state,
+                "test_step": step.test_step,
+                "step_action": step.step_action,
+                "step_expected": step.step_expected
+            })
+
+    df = pd.DataFrame(data)
+    print(df)
     print("==============================================================")
 
 def route_review_test_scenario(state: AgentState):
