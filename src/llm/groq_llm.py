@@ -11,6 +11,8 @@ class GroqLLM:
             llm = ChatGroq(
                 api_key =self.api_key, 
                 model=self.model,
+                streaming=True,
+                temperature=0
                 )
         except Exception as e:
             raise ValueError(f"Error Occurred with Exception : {e}")

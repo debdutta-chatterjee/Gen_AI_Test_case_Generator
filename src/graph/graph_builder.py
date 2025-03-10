@@ -1,10 +1,25 @@
-from src.state import AgentState
+from src.state.state import AgentState
 from langgraph.graph import StateGraph, START,END
 
 class GraphBuilder():
     
     def __init__(self,node):
         self.node = node
+
+    def build_test_case_graph(self):
+        #Grpah
+        builder = StateGraph(AgentState)
+
+        #nodes
+        builder.add_node("generate_test_steps",self.node.generate_test_steps)
+        builder.add_node("finalize_content",self.node.finalize_content)
+
+        #constuct edges
+        builder.add_edge(START,"generate_test_steps")
+        builder.add_edge("generate_test_steps","finalize_content")
+        builder.add_edge("finalize_content",END)
+        return builder
+
 
     def build_graph(self):
         #Grpah

@@ -3,6 +3,10 @@ import os
 import dotenv
 import pandas as pd
 import numpy as np
+from src.llm.groq_llm import ChatGroq
+from src.graph.graph_builder import GraphBuilder
+from src.node.node import Node
+from src.state.state import AgentState
 
 from src.azure.azure import AzureConnection
 
@@ -27,21 +31,37 @@ class StreamlitUi:
             
             if st.sidebar.button("Get ADO requirement"):
                 ado = AzureConnection()
-                details = ado.get_user_story_details(ado_url,pat,ado_us_id)
-                st.session_state.requirement_text = details
-            
+                us = ado.get_user_story_details(ado_url,pat,ado_us_id)
+                st.session_state.us_details= us
+                st.session_state.requirement_text = f"Title: {us.title} description:{us.business_context} acceptance criteria:{us.acceptance_critera}"            
             
             st.text_area("Requirement from ADO:", value =st.session_state.requirement_text,key="Requirement from ADO")
             st.text_area("Precondition:", key="Precondition")
 
 
             if st.button("Generate test cases", key="generate_test_case"):
-                st.info("Generate test cases is still work in progress!")
+                #llm
+                model = ChatGroq(groq_api_key=api_key,model_name="qwen-2.5-32b")
 
-            df = pd.DataFrame(
-            np.random.rand(5, 5), 
-            columns=['Column1', 'Column2', 'Column3', 'Column4', 'Column5']
-            )
+                #graph
+                node = Node(model)
+                builder = GraphBuilder(node)
+                graph = builder.build_test_case_graph()
+                flow = graph.compile()
+
+                #invoke graph
+                initial_state = {
+                    "user_story": st.session_state.us_details
+                }
+                flow.invoke(initial_state)
+                state = AgentState(**dict(flow.invoke(initial_state)))
+                df = state["final_data"]
+                df["Area Path"]=""
+                df["Assigned To"]=""
+                df["Work Item Type"]="Test Case"
+                df["Title"]=""
+
+            
             # Display the DataFrame
             st.write("Here's a preview of your data:")
             st.dataframe(df, width=800, height=200)

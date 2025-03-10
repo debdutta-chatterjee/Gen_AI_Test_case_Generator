@@ -2,6 +2,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import re
+from src.state.state import UserStory
 
 class AzureConnection:
 
@@ -17,8 +18,14 @@ class AzureConnection:
                 
                 description = details['fields'].get('System.Description', 'No description available'),
                 acceptance_criteria = details['fields'].get('Microsoft.VSTS.Common.AcceptanceCriteria', 'No acceptance criteria available')
+                title = details['fields']['System.Title']
                 
-                return self.remove_html_tags(f"description: {description} acceptance criteria :{acceptance_criteria}")
+                us = UserStory(
+                acceptance_critera = self.remove_html_tags(str(acceptance_criteria)),
+                business_context = self.remove_html_tags(str(description)),
+                title = self.remove_html_tags(str(title))
+                )
+                return us
             else:
                 raise ValueError(f"Failed to fetch user story details: {response.status_code} - {response.text}")
         except Exception as e:

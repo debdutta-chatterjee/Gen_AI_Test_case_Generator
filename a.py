@@ -95,7 +95,7 @@ def get_requirement(state:AgentState):
             HumanMessage(content=prompt),
         ]
         )
-    
+    print(response)
     print("==============================================================")
     return {"user_story":response}
 
