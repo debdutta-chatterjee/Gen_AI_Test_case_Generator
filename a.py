@@ -74,8 +74,8 @@ class AgentState(TypedDict):
     user_story : UserStory
     test_scenarios: TestScenarios
     scenario_review: Feedback
-    test_step_review: Literal["Accepted", "Rejected"] = "Rejected"
-    test_case: TestCases
+    test_step_review: Feedback
+    test_case: Literal["Accepted", "Rejected"] = "Rejected"
     user_input:str
 
 api_key = "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"
@@ -165,11 +165,14 @@ def generate_test_steps(state:AgentState):
                 Business context - {business_context}
                 Acceptance criteria - {acceptance_criteria}
             """
+    scenario = str(state["test_scenarios"].test_scenarios[0])
+    scenario = scenario.replace("test_scenario=", "").replace("'", "").replace(":", "").replace(",", "").replace("/", "")
+    print(scenario)
     prompt_formatted = prompt.format(
         user_story=state["user_story"].user_story, 
         business_context=state["user_story"].business_context, 
         acceptance_criteria=state["user_story"].acceptance_critera,
-        test_scenario = state["test_scenarios"].test_scenarios[0]
+        test_scenario = scenario
         )
     
     #print(prompt_formatted)
@@ -190,7 +193,28 @@ def generate_test_steps(state:AgentState):
 
 def review_steps(state:AgentState):
     print('review_steps')
-    print("==============================================================")
+    # prompt ="""Review the test steps and provide feedback to 
+    #             Accept or Reject
+    #             test steps = {test_steps}
+    #         """
+    # steps = str(state["test_case"].test_cases[0].ste)
+    # print(steps)
+    # prompt_formatted = prompt.format(
+    #     test_steps = steps
+    #     )
+    # llm =model.with_structured_output(Feedback)
+    # response = llm.invoke(
+    #     [
+    #     SystemMessage(
+    #             content="You are an expert software qualty analyst in "
+    #             "writing functional test cases."
+    #         ),
+    #         HumanMessage(content=prompt),
+    #     ]
+    #     )
+    # print(response)
+    # print("==============================================================")
+    # return {"test_step_review":response}
     return {"test_step_review":"Accepted"}    
 
 def finalize_content(state:AgentState):
@@ -215,16 +239,17 @@ def route_review_test_scenario(state: AgentState):
     """Route back to generate test scenario or genrate go to the 
     test case step based on the review feedback"""
     print(state["scenario_review"].feedback_decision)
-    return state["scenario_review"].feedback_decision
     print("==============================================================")
+    return state["scenario_review"].feedback_decision
+    
 
 def route_review_test_step(state: AgentState):
     """Route back to generate test steps or go to the finalize
       content based on the review feedback"""
-
     print(state["test_step_review"])
-    return state["test_step_review"]
     print("==============================================================")
+    return state["test_step_review"]
+   
 
 from langgraph.graph import START,END,StateGraph
 
@@ -271,8 +296,7 @@ builder.add_edge("finalize_content",END)
 graph = builder.compile()
 
 initial_state = {
-    "test_step_review": "Rejected",
-    "user_input": "s"
+    "test_step_review": "Rejected"
 }
 
 graph.invoke(initial_state)
