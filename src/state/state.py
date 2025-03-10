@@ -25,6 +25,9 @@ class Feedback(BaseModel):
     )
 
 class TestStep(BaseModel):
+    step_number: int  = Field(
+        description="step number",
+    )
     step_action: str  = Field(
         description="action",
     )
@@ -33,6 +36,12 @@ class TestStep(BaseModel):
     )
     
 class TestCase(BaseModel):
+    test_case_id: int  = Field(
+        description="step number",
+    )
+    test_case_title: str  = Field(
+        description="test case id",
+    )
     test_steps: List[TestStep]  = Field(
         description="list of test cases",
     )

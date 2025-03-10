@@ -40,12 +40,19 @@ class Node:
         for test_case in state["test_cases"].test_cases:
             for step in test_case.test_steps:
                 data.append({
-                    "step_action": step.step_action,
-                    "step_expected": step.step_expected
+                    "Test Case id": test_case.test_case_id,
+                    "Work Item type": "Test Case",
+                    "Test Case Title": test_case.test_case_title,
+                    "test Step": step.step_number,
+                    "Step Action": step.step_action,
+                    "Step Expected": step.step_expected,
+                    "Area Path": "",
+                    "Assigned To":"",
+                    "State":"Ready"
                 })
 
         df = pd.DataFrame(data)
-        #print(df)
+        print(df)
         print("==============================================================")
         return {"final_data":df}
         

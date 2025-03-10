@@ -56,15 +56,14 @@ class StreamlitUi:
                 flow.invoke(initial_state)
                 state = AgentState(**dict(flow.invoke(initial_state)))
                 df = state["final_data"]
-                df["Area Path"]=""
-                df["Assigned To"]=""
-                df["Work Item Type"]="Test Case"
-                df["Title"]=""
-
+                df_reset = df.reset_index(drop=True)
             
-            # Display the DataFrame
-            st.write("Here's a preview of your data:")
-            st.dataframe(df, width=800, height=200)
+                # Display the DataFrame
+                st.write("Here's the AI generated test cases:")
+                st.data_editor(df_reset.to_dict(orient='records'), width=800, height=200)
+                #st.dataframe(df_reset.to_dict(orient='records'), width=800, height=200)
+                #st.dataframe(editable_df, width=800, height=200)
+                
 
             if st.button("Upload to Azure", key="upload_button"):
                 st.info("Upload functionality is still work in progress!")
