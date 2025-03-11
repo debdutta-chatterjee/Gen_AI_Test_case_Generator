@@ -91,9 +91,8 @@ if btn_submit_feedback:
             "user_story": st.session_state.us_details,
             "user_feedback": feedback
         }
-
-        st.session_state.response_state.user_feedback = feedback
-        st.session_state.response_state = AgentState(**dict(st.session_state.flow.invoke(st.session_state.response_state)))
+        
+        st.session_state.response_state = AgentState(**dict(st.session_state.flow.invoke(initial_state)))
         df = st.session_state.response_state["final_data"]
         df_reset = df.reset_index(drop=True)
         st.session_state.final_test_cases = df_reset        

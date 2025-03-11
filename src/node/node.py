@@ -10,6 +10,7 @@ class Node:
     def generate_test_steps(self,state:AgentState):
         print('generate_test_steps')
         if len(state["user_feedback"]) == 0:
+            print("normal prompt")
             prompt ="""Generate test cases & test steps for the given User story details.
                     User story title- {user_story}
                     Business context - {business_context}
@@ -21,6 +22,7 @@ class Node:
             acceptance_criteria=state["user_story"].acceptance_critera
             )
         else:
+            print("feedback prompt")
             prompt ="""Generate test cases & test steps for the given User story 
             details with given user feedback.
                     User story title- {user_story}
@@ -34,7 +36,7 @@ class Node:
             acceptance_criteria=state["user_story"].acceptance_critera,
             feedback = state["user_feedback"]
             )        
-        print(prompt)
+        
         llm =self.model.with_structured_output(TestCases)
         response = llm.invoke(
             [
@@ -69,5 +71,5 @@ class Node:
         df = pd.DataFrame(data)
         #print(df)
         print("==============================================================")
-        return {"final_data":df,"user_feedback":""}
+        return {"final_data":df}
         
