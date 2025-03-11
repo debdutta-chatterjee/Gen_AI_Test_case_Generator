@@ -24,17 +24,19 @@ class Node:
         else:
             print("feedback prompt")
             prompt ="""Generate test cases & test steps for the given User story 
-            details with given user feedback.
+            details with given user feedback. Earlier generated test sscript details are also given.
                     User story title- {user_story}
                     Business context - {business_context}
                     Acceptance criteria - {acceptance_criteria}
                     Feedback - {feedback}
+                    Past tst cases - {test_cases}
                 """
             prompt_formatted = prompt.format(
             user_story=state["user_story"].title, 
             business_context=state["user_story"].business_context, 
             acceptance_criteria=state["user_story"].acceptance_critera,
-            feedback = state["user_feedback"]
+            feedback = state["user_feedback"],
+            test_cases = state["test_cases"]
             )        
         
         llm =self.model.with_structured_output(TestCases)

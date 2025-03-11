@@ -75,6 +75,7 @@ if btn_generate_test:
         }
         #flow.invoke(initial_state)
         st.session_state.response_state = AgentState(**dict(st.session_state.flow.invoke(initial_state)))
+        print(st.session_state.response_state["test_cases"])
         df = st.session_state.response_state["final_data"]
         df_reset = df.reset_index(drop=True)
         st.session_state.final_test_cases = df_reset        
@@ -89,6 +90,7 @@ if btn_submit_feedback:
 
         initial_state = {
             "user_story": st.session_state.us_details,
+            "test_cases": st.session_state.response_state["test_cases"] ,
             "user_feedback": feedback
         }
         
