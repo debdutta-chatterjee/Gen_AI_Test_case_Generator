@@ -9,16 +9,30 @@ class Node:
 
     def generate_test_steps(self,state:AgentState):
         print('generate_test_steps')
-        prompt ="""Generate test cases & test steps for the given User story details.
+        if len(state["user_feedback"]) == 0:
+            prompt ="""Generate test cases & test steps for the given User story details.
                     User story title- {user_story}
                     Business context - {business_context}
                     Acceptance criteria - {acceptance_criteria}
                 """
-        prompt_formatted = prompt.format(
+            prompt_formatted = prompt.format(
             user_story=state["user_story"].title, 
             business_context=state["user_story"].business_context, 
             acceptance_criteria=state["user_story"].acceptance_critera
             )
+        else:
+            prompt ="""Generate test cases & test steps for the given User story details with given user feedback.
+                    User story title- {user_story}
+                    Business context - {business_context}
+                    Acceptance criteria - {acceptance_criteria}
+                    Feedback - {feedback}
+                """
+            prompt_formatted = prompt.format(
+            user_story=state["user_story"].title, 
+            business_context=state["user_story"].business_context, 
+            acceptance_criteria=state["user_story"].acceptance_critera,
+            feedback = state["user_feedback"]
+            )        
         
         llm =self.model.with_structured_output(TestCases)
         response = llm.invoke(
