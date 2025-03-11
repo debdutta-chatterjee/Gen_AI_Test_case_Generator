@@ -55,3 +55,4 @@ class AgentState(TypedDict):
     user_story : UserStory
     test_cases: TestCases
     final_data :DataFrame
+    user_feedback:str
